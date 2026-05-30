@@ -8,6 +8,10 @@
 
 Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for all commit messages.
 
+## Multi-Agent Workflow
+
+Multiple coding agents may be running concurrently against this repo ("multi-Clauding"). When committing, stage and push only the files this session actually touched — never use `git add -A` or `git add .`, and unstage any pre-existing staged changes before committing, since they likely belong to another session.
+
 ---
 
 You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
