@@ -18,7 +18,7 @@
 	<title>Model Memory — What do LLMs recommend?</title>
 	<meta
 		name="description"
-		content="A perpetual archive of how large language models answer the questions you ask them — and how those answers drift over time."
+		content="An archive of which products LLMs recommend, tracked over time. Market research for the post-search era."
 	/>
 </svelte:head>
 
@@ -35,8 +35,8 @@
 				recommend?
 			</h1>
 			<p class="subhead">
-				A perpetual ledger of how large language models answer the questions you ask
-				them — and how those answers settle, sediment, and refuse to budge.
+				An archive of which products LLMs recommend, tracked over time. Useful when
+				you want to know who owns mindshare in your category — and how that shifts.
 			</p>
 		</section>
 
@@ -76,8 +76,9 @@
 				They keep saying<br /><em>the&nbsp;same&nbsp;thing.</em>
 			</h2>
 			<p class="lede">
-				Our archive is a record of that quiet consensus — and the rare moments when a
-				single model breaks rank.
+				When buyers ask an LLM what to use, the same handful of names come back.
+				Model Memory tracks that share-of-voice across every major model, and the
+				rare moments it shifts.
 			</p>
 
 			<div class="stats">
@@ -100,7 +101,8 @@
 					<div>
 						<span class="step-title">We ask.</span>
 						<span class="step-body"
-							>Every major model. Identical prompts. On a regular schedule.</span
+							>Every major model. Identical prompts. Weekly cadence, plus on
+							demand.</span
 						>
 					</div>
 				</li>
@@ -109,7 +111,8 @@
 					<div>
 						<span class="step-title">We archive.</span>
 						<span class="step-body"
-							>Every answer, time-stamped, retrievable in perpetuity.</span
+							>Every answer, time-stamped. Queryable, exportable, and citable as
+							evidence.</span
 						>
 					</div>
 				</li>
@@ -119,8 +122,8 @@
 						<span class="step-title">You refresh.</span>
 						<span class="step-body"
 							>Commission a new query or refresh an existing one for a few cents in
-							stablecoin, paid via x402. We forward the cost to the models; you keep
-							the record.</span
+							stablecoin via x402. We pay the model costs; the result enters the
+							public archive.</span
 						>
 					</div>
 				</li>
@@ -129,7 +132,7 @@
 
 		<section class="coming-soon">
 			<p>Beta opening soon.</p>
-			<p class="sig">— a slow record of fast machines</p>
+			<p class="sig">— recommendation intelligence, made public</p>
 		</section>
 	</main>
 
