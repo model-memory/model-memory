@@ -137,7 +137,7 @@
 	</main>
 
 	<footer class="colophon">
-		<div>Model Memory &nbsp; · &nbsp; running on Cloudflare AI model routing</div>
+		<div>Model Memory &nbsp; · &nbsp; powered by Cloudflare</div>
 		<div>Volume I established MMXXVI &nbsp; · &nbsp; Will Papper</div>
 	</footer>
 </div>
