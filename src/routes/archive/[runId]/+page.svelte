@@ -36,7 +36,14 @@
 		<section class="entry">
 			<div class="entry-header">
 				<span class="stamp">{run.status === 'running' ? 'In progress' : 'Archived'}</span>
-				<span class="logged">Logged {stamp(run.created_at)}</span>
+				<span class="logged">
+					Logged {stamp(run.created_at)}
+					{#if run.content_hash}
+						&nbsp;·&nbsp;<code title={`sha256: ${run.content_hash}`}
+							>{run.content_hash.slice(0, 12)}</code
+						>
+					{/if}
+				</span>
 			</div>
 
 			<p class="query">
@@ -50,10 +57,12 @@
 				</p>
 			{:else}
 				<ul class="answers">
-					{#each responses as r (r.model)}
+					{#each responses as r (`${r.model}#${r.sample_index}`)}
 						<li class:errored={r.error !== null}>
 							<div class="answer-head">
-								<span class="model" title={r.model}>{displayModel(r.model)}</span>
+								<span class="model" title={r.model}>
+									{displayModel(r.model)}{r.sample_index > 0 ? ` #${r.sample_index + 1}` : ''}
+								</span>
 								<span class="answer-meta">
 									{#if r.latency_ms !== null}
 										<span>{(r.latency_ms / 1000).toFixed(1)}s</span>
@@ -147,6 +156,11 @@
 
 	.entry-header .logged {
 		color: var(--color-mark);
+	}
+
+	.entry-header .logged code {
+		text-transform: none;
+		letter-spacing: 0.04em;
 	}
 
 	.query {

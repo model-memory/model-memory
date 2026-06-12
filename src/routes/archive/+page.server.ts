@@ -10,13 +10,15 @@ export const load: PageServerLoad = async ({ platform, url }) => {
 	const gw = gateway(platform);
 	const pageParam = Number(url.searchParams.get('page') ?? 1);
 	const page = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
+	const search = url.searchParams.get('q')?.trim().toLowerCase() ?? '';
 	const empty = {
 		available: false,
 		questions: [],
 		runs: [],
 		balances: { global_credits: 0, questions: [] },
 		page,
-		hasOlder: false
+		hasOlder: false,
+		search
 	};
 	if (!gw) return empty;
 
@@ -27,13 +29,19 @@ export const load: PageServerLoad = async ({ platform, url }) => {
 			gw.listRuns({ limit: RUNS_PER_PAGE + 1, offset: (page - 1) * RUNS_PER_PAGE }),
 			gw.getBalances()
 		]);
+		const filtered = search
+			? questions.filter(
+					(q) => q.text.toLowerCase().includes(search) || q.category?.includes(search)
+				)
+			: questions;
 		return {
 			available: true,
-			questions,
+			questions: filtered,
 			runs: runs.slice(0, RUNS_PER_PAGE),
 			balances,
 			page,
-			hasOlder: runs.length > RUNS_PER_PAGE
+			hasOlder: runs.length > RUNS_PER_PAGE,
+			search
 		};
 	} catch (err) {
 		console.error('archive load failed:', err);

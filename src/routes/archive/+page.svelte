@@ -23,7 +23,7 @@
 <div class="paper">
 	<header class="masthead">
 		<a class="mark" href={resolve('/')}>Model Memory</a>
-		<div class="meta">The Archive</div>
+		<a class="meta" href={resolve('/shifts')}>The Shifts &rarr;</a>
 	</header>
 
 	<main class="page">
@@ -34,8 +34,23 @@
 		{:else}
 			<section>
 				<h2 class="section-title">Tracked questions</h2>
+				<form class="search" method="GET">
+					<input
+						type="search"
+						name="q"
+						value={data.search}
+						placeholder="Search questions and categories…"
+					/>
+					{#if data.search}
+						<a class="clear" href={resolve('/archive')}>clear</a>
+					{/if}
+				</form>
 				{#if data.questions.length === 0}
-					<p class="notice">No questions tracked yet. Commission the first one below.</p>
+					<p class="notice">
+						{data.search
+							? 'Nothing matches that search.'
+							: 'No questions tracked yet. Commission the first one below.'}
+					</p>
 				{:else}
 					<ul class="ledger">
 						{#each data.questions as q (q.id)}
@@ -168,6 +183,47 @@ POST /api/commission
 
 	.masthead .meta {
 		color: var(--color-mark);
+		text-decoration: none;
+	}
+
+	a.meta:hover {
+		color: var(--color-stamp);
+	}
+
+	.search {
+		display: flex;
+		align-items: baseline;
+		gap: 0.75rem;
+		margin-bottom: 1.25rem;
+	}
+
+	.search input {
+		flex: 1 1 18rem;
+		max-width: 26rem;
+		background: transparent;
+		border: 1px solid var(--color-rule);
+		font-family: var(--font-body);
+		font-size: 0.95rem;
+		padding: 0.4rem 0.7rem;
+		color: var(--color-ink);
+	}
+
+	.search input:focus {
+		border-color: var(--color-stamp);
+		outline: none;
+	}
+
+	.search .clear {
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--color-mark);
+		text-decoration: none;
+	}
+
+	.search .clear:hover {
+		color: var(--color-stamp);
 	}
 
 	.section-title {
