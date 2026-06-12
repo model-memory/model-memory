@@ -97,6 +97,7 @@ export interface LlmGateway {
 		offset?: number;
 		questionId?: string;
 	}): Promise<RunSummary[]>;
+	getQuestion(questionId: string): Promise<QuestionRow | null>;
 	listQuestions(includeInactive?: boolean): Promise<QuestionRow[]>;
 	addQuestion(text: string): Promise<QuestionRow>;
 	setQuestionActive(questionId: string, active: boolean): Promise<void>;
