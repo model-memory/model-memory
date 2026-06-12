@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { tallyProducts } from '$lib/products';
 
 	let { data } = $props();
 
@@ -9,11 +10,9 @@
 		const named = responses
 			.map((r) => r.recommended_product)
 			.filter((p): p is string => Boolean(p));
-		if (named.length === 0) return null;
-		const counts: Record<string, number> = {};
-		for (const p of named) counts[p] = (counts[p] ?? 0) + 1;
-		const [top, n] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
-		return { top, n, of: named.length };
+		const tally = tallyProducts(named);
+		if (tally.length === 0) return null;
+		return { top: tally[0].name, n: tally[0].count, of: named.length };
 	});
 
 	function stamp(unixSeconds: number): string {

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { productKey, tallyProducts } from '$lib/products';
 
 	let { data } = $props();
 
@@ -36,11 +37,7 @@
 	});
 
 	const entry = $derived(live ?? fallback);
-	const consensusTop = $derived.by(() => {
-		const counts: Record<string, number> = {};
-		for (const s of entry.specimens) counts[s.answer] = (counts[s.answer] ?? 0) + 1;
-		return Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
-	});
+	const consensusTop = $derived(tallyProducts(entry.specimens.map((s) => s.answer))[0]);
 
 	const insights = [
 		{ stat: '87%', label: 'of hosting queries name Vercel' },
@@ -89,7 +86,7 @@
 
 			<ul class="answers">
 				{#each entry.specimens as { model, answer } (model)}
-					<li class:diverges={answer !== consensusTop[0]}>
+					<li class:diverges={productKey(answer) !== productKey(consensusTop.name)}>
 						<span class="model">{model}</span>
 						<span class="dots" aria-hidden="true"></span>
 						<span class="answer">{answer}</span>
@@ -99,8 +96,8 @@
 
 			{#if live}
 				<p class="consensus">
-					Consensus {consensusTop[1]}&thinsp;⁄&thinsp;{entry.specimens.length} for
-					{consensusTop[0]}.
+					Consensus {consensusTop.count}&thinsp;⁄&thinsp;{entry.specimens.length} for
+					{consensusTop.name}.
 					<a href={resolve('/archive/[runId]', { runId: live.runId })}>Read the full entry &rarr;</a
 					>
 				</p>
