@@ -249,7 +249,8 @@ describe('POST /api/commission — challenge and validation', () => {
 			{ allocation: 'all', questionIds: ['a'] },
 			{ allocation: 'subset' },
 			{ prompt: 'x', questionId: 'q1' },
-			{ credits: 0, prompt: 'x' }
+			{ credits: 0, prompt: 'x' },
+			{ prompt: 'x'.repeat(501) }
 		];
 		for (const body of cases) {
 			const res = await post(gw, body);

@@ -52,6 +52,9 @@ function parseCommission(body: CommissionBody): Commission | string {
 	}
 
 	const prompt = body.prompt?.trim() || undefined;
+	if (prompt && prompt.length > 500) {
+		return 'prompt must be at most 500 characters';
+	}
 	const questionId = body.questionId?.trim() || undefined;
 	const questionIds = [...new Set((body.questionIds ?? []).map((id) => id.trim()).filter(Boolean))];
 	if (questionIds.length > 100) {

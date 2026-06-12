@@ -23,6 +23,7 @@ export type ResponseRow = {
 	latency_ms: number | null;
 	error: string | null;
 	recommended_product: string | null;
+	extracted_by: string | null;
 	created_at: number;
 };
 
