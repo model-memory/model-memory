@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 
-	let { data, form } = $props();
+	let { data } = $props();
 
 	const balanceByQuestion = $derived(
 		new Map(data.balances.questions.map((b) => [b.question_id, b.available_credits]))
@@ -35,24 +35,22 @@
 			<section>
 				<h2 class="section-title">Tracked questions</h2>
 				{#if data.questions.length === 0}
-					<p class="notice">No questions tracked yet. Ask one below.</p>
+					<p class="notice">No questions tracked yet. Commission the first one below.</p>
 				{:else}
 					<ul class="ledger">
 						{#each data.questions as q (q.id)}
 							{@const credits = (balanceByQuestion.get(q.id) ?? 0) + data.balances.global_credits}
 							<li>
-								<span class="q-text">{q.text}</span>
+								<a class="q-text" href={resolve('/archive/q/[questionId]', { questionId: q.id })}
+									>{q.text}</a
+								>
 								<span class="q-meta">
 									<span class="credits" class:unfunded={credits === 0}>
 										{credits} refresh{credits === 1 ? '' : 'es'} funded
 									</span>
-									<form method="POST" action="?/weekly">
-										<input type="hidden" name="questionId" value={q.id} />
-										<input type="hidden" name="weekly" value={q.weekly ? 'false' : 'true'} />
-										<button class="toggle" type="submit">
-											weekly: {q.weekly ? 'on' : 'off'}
-										</button>
-									</form>
+									<span class="tag" class:on={q.weekly === 1}>
+										weekly: {q.weekly ? 'on' : 'off'}
+									</span>
 								</span>
 							</li>
 						{/each}
@@ -60,8 +58,7 @@
 					<p class="footnote">
 						Shared pool: {data.balances.global_credits} credit{data.balances.global_credits === 1
 							? ''
-							: 's'} usable by every question. Commission refreshes or new queries for a few cents via
-						<code>POST /api/commission</code> (x402).
+							: 's'} usable by every question.
 					</p>
 				{/if}
 			</section>
@@ -83,7 +80,7 @@
 									{#if run.question_id && questionById.get(run.question_id)}
 										<span class="tag">tracked</span>
 									{/if}
-									<span class="tag" class:running={run.status === 'running'}>{run.status}</span>
+									<span class="tag" class:on={run.status === 'running'}>{run.status}</span>
 									<span class="logged">{stamp(run.created_at)}</span>
 								</span>
 							</li>
@@ -95,19 +92,27 @@
 			<hr class="rule" />
 
 			<section>
-				<h2 class="section-title">Ask the machines</h2>
-				{#if form?.message}
-					<p class="notice error">{form.message}</p>
-				{/if}
-				<form class="ask" method="POST" action="?/ask">
-					<input
-						name="prompt"
-						type="text"
-						placeholder="e.g. Where should I host my SvelteKit app?"
-						required
-					/>
-					<button type="submit">Run it</button>
-				</form>
+				<h2 class="section-title">Commission a query</h2>
+				<p class="notice">
+					No accounts here — your wallet is your identity. Pay a few cents in USDC via
+					<a class="link" href="https://www.x402.org" rel="external">x402</a> and the result enters the
+					public archive. One payment buys refresh credits; unspent credits fund that query's weekly refreshes.
+				</p>
+				<pre class="howto">{`# new query: 1 refresh now + 3 banked for weekly sweeps
+POST /api/commission
+{ "prompt": "Where should I host my SvelteKit app?",
+  "credits": 4, "weekly": true }
+
+# refresh an existing query
+{ "questionId": "<id>", "credits": 1 }
+
+# top up a buffer shared by several queries — or by all of them
+{ "allocation": "subset", "questionIds": ["<id>", "<id>"], "credits": 10 }
+{ "allocation": "all", "credits": 25 }`}</pre>
+				<p class="footnote">
+					Use an x402 client (e.g. <code>x402-fetch</code>) — the endpoint answers HTTP 402 with
+					payment requirements. <code>GET /api/commission</code> returns live pricing.
+				</p>
 			</section>
 		{/if}
 	</main>
@@ -218,7 +223,7 @@
 		color: var(--color-mark);
 	}
 
-	.tag.running {
+	.tag.on {
 		border-color: var(--color-stamp);
 		color: var(--color-stamp);
 	}
@@ -227,29 +232,14 @@
 		color: var(--color-mark);
 	}
 
-	.toggle {
-		background: none;
-		border: 1px solid var(--color-rule);
-		padding: 0.1rem 0.4rem;
-		font: inherit;
-		color: var(--color-mark);
-		cursor: pointer;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-	}
-
-	.toggle:hover {
-		border-color: var(--color-stamp);
-		color: var(--color-stamp);
-	}
-
 	.notice {
 		font-family: var(--font-body);
 		font-style: italic;
 		color: var(--color-mark);
+		max-width: 60ch;
 	}
 
-	.notice.error {
+	.notice .link {
 		color: var(--color-stamp);
 	}
 
@@ -265,40 +255,15 @@
 		color: var(--color-ink);
 	}
 
-	.ask {
-		display: flex;
-		gap: 0.75rem;
-		flex-wrap: wrap;
-	}
-
-	.ask input[type='text'] {
-		flex: 1 1 20rem;
-		background: transparent;
+	.howto {
+		margin: 1.25rem 0 0;
+		padding: 1rem 1.2rem;
 		border: 1px solid var(--color-rule);
-		font-family: var(--font-body);
-		font-size: 1.05rem;
-		padding: 0.55rem 0.8rem;
-		color: var(--color-ink);
-	}
-
-	.ask input[type='text']:focus {
-		border-color: var(--color-stamp);
-		outline: none;
-	}
-
-	.ask button {
-		background: var(--color-ink);
-		color: var(--color-paper);
-		border: 0;
 		font-family: var(--font-mono);
 		font-size: 0.78rem;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		padding: 0.55rem 1.2rem;
-		cursor: pointer;
-	}
-
-	.ask button:hover {
-		background: var(--color-stamp);
+		line-height: 1.6;
+		color: var(--color-ink);
+		overflow-x: auto;
+		background: var(--color-paper-shade);
 	}
 </style>

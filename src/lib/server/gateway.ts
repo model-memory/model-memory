@@ -70,6 +70,25 @@ export type RefreshResult = {
 	credits_remaining: number;
 };
 
+export type QuestionHistoryPick = {
+	run_id: string;
+	model: string;
+	provider: string;
+	recommended_product: string | null;
+	error: string | null;
+};
+
+export type QuestionHistoryRun = {
+	run: RunSummary;
+	picks: QuestionHistoryPick[];
+};
+
+export type QuestionHistory = {
+	question: QuestionRow;
+	runs: QuestionHistoryRun[];
+	funders: string[];
+};
+
 export interface LlmGateway {
 	createRun(prompt: string, options?: { questionId?: string }): Promise<RunSummary>;
 	getRun(runId: string): Promise<RunDetail>;
@@ -92,6 +111,7 @@ export interface LlmGateway {
 		questionIds?: string[];
 	}): Promise<PaymentRow>;
 	refreshQuestion(questionId: string): Promise<RefreshResult>;
+	getQuestionHistory(questionId: string, limit?: number): Promise<QuestionHistory>;
 	getBalances(): Promise<BalanceSummary>;
 }
 

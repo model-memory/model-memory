@@ -1,7 +1,9 @@
-import { fail, redirect } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
+import type { PageServerLoad } from './$types';
 import { gateway } from '$lib/server/gateway';
 
+// Read-only: there is no app-level auth. All writes (new questions,
+// refreshes, weekly opt-in) go through the x402-paid POST /api/commission,
+// with the settling EVM address as the user identity.
 export const load: PageServerLoad = async ({ platform }) => {
 	const gw = gateway(platform);
 	const empty = {
@@ -22,35 +24,5 @@ export const load: PageServerLoad = async ({ platform }) => {
 	} catch (err) {
 		console.error('archive load failed:', err);
 		return empty;
-	}
-};
-
-export const actions: Actions = {
-	// Operator path: track a question and fan it out without payment.
-	// Public commissioning goes through POST /api/commission (x402).
-	ask: async ({ request, platform }) => {
-		const gw = gateway(platform);
-		if (!gw) return fail(503, { message: 'Gateway unavailable.' });
-
-		const form = await request.formData();
-		const prompt = String(form.get('prompt') ?? '').trim();
-		if (!prompt) return fail(400, { message: 'Enter a question.' });
-
-		const question = await gw.addQuestion(prompt);
-		const run = await gw.createRun(prompt, { questionId: question.id });
-		redirect(303, `/archive/${run.id}`);
-	},
-
-	weekly: async ({ request, platform }) => {
-		const gw = gateway(platform);
-		if (!gw) return fail(503, { message: 'Gateway unavailable.' });
-
-		const form = await request.formData();
-		const questionId = String(form.get('questionId') ?? '');
-		const weekly = form.get('weekly') === 'true';
-		if (!questionId) return fail(400, { message: 'Missing question.' });
-
-		await gw.setQuestionWeekly(questionId, weekly);
-		return { ok: true };
 	}
 };
