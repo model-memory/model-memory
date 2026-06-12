@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { productKey, tallyProductCounts, tallyProducts } from './products';
+import { displayModel, productKey, tallyProductCounts, tallyProducts } from './products';
+
+describe('displayModel', () => {
+	it('strips the Workers AI prefix and keeps provider prefixes', () => {
+		expect(displayModel('@cf/meta/llama-3.1-8b-instruct')).toBe('llama-3.1-8b-instruct');
+		expect(displayModel('openai/gpt-5.1')).toBe('openai/gpt-5.1');
+	});
+});
 
 describe('productKey', () => {
 	it('canonicalizes case, articles, possessives, and TLDs', () => {

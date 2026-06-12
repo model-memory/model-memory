@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { productKey, tallyProducts } from '$lib/products';
+	import { displayModel, productKey, tallyProducts } from '$lib/products';
 
 	let { data } = $props();
 
@@ -23,11 +23,33 @@
 			const dissenters = top
 				? named
 						.filter((p) => productKey(p.recommended_product as string) !== productKey(top.name))
-						.map((p) => p.model)
+						.map((p) => displayModel(p.model))
 				: [];
 			return { run, top, named: named.length, dissenters };
 		})
 	);
+
+	// Model ledger: one row per model, one column per run (oldest left),
+	// highlighting the moments a model's pick flips.
+	const MATRIX_RUNS = 10;
+	const matrix = $derived.by(() => {
+		const runs = [...data.history.runs].slice(0, MATRIX_RUNS).reverse();
+		if (runs.length < 2) return null;
+		const models = [...new Set(runs.flatMap((r) => r.picks.map((p) => p.model)))].sort();
+		const rows = models.map((model) => {
+			let prevKey: string | null = null;
+			const cells = runs.map(({ run, picks }) => {
+				const pick = picks.find((p) => p.model === model);
+				const product = pick?.recommended_product ?? null;
+				const key = product ? productKey(product) : null;
+				const flipped = key !== null && prevKey !== null && key !== prevKey;
+				if (key !== null) prevKey = key;
+				return { runId: run.id, product, flipped, errored: Boolean(pick?.error) };
+			});
+			return { model, cells };
+		});
+		return { runs: runs.map((r) => r.run), rows };
+	});
 
 	function stamp(unixSeconds: number): string {
 		const d = new Date(unixSeconds * 1000);
@@ -109,6 +131,49 @@
 				</p>
 			{/if}
 		</section>
+
+		{#if matrix}
+			<hr class="rule" />
+
+			<section>
+				<h2 class="section-title">Model ledger</h2>
+				<div class="matrix-scroll">
+					<table class="matrix">
+						<thead>
+							<tr>
+								<th class="model-col">model</th>
+								{#each matrix.runs as run (run.id)}
+									<th
+										><a href={resolve('/archive/[runId]', { runId: run.id })}
+											>{stamp(run.created_at)}</a
+										></th
+									>
+								{/each}
+							</tr>
+						</thead>
+						<tbody>
+							{#each matrix.rows as { model, cells } (model)}
+								<tr>
+									<td class="model-col" title={model}>{displayModel(model)}</td>
+									{#each cells as cell, i (cell.runId + model + i)}
+										<td class:flipped={cell.flipped} title={cell.product ?? undefined}>
+											{#if cell.product}
+												{cell.flipped ? '※ ' : ''}{cell.product}
+											{:else if cell.errored}
+												<span class="err">×</span>
+											{:else}
+												<span class="none">—</span>
+											{/if}
+										</td>
+									{/each}
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+				<p class="footnote">※ marks a flip — the model changed its pick from the previous run.</p>
+			</section>
+		{/if}
 
 		<hr class="rule" />
 
@@ -271,6 +336,60 @@
 		border: 0;
 		border-top: 1px solid var(--color-rule);
 		margin: clamp(2rem, 5vw, 3.5rem) 0;
+	}
+
+	.matrix-scroll {
+		overflow-x: auto;
+	}
+
+	.matrix {
+		border-collapse: collapse;
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		width: 100%;
+	}
+
+	.matrix th,
+	.matrix td {
+		border: 1px dashed var(--color-rule);
+		padding: 0.4rem 0.6rem;
+		text-align: left;
+		white-space: nowrap;
+		max-width: 11rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.matrix thead th {
+		font-weight: 500;
+		font-size: 0.68rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--color-mark);
+	}
+
+	.matrix thead a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.matrix thead a:hover {
+		color: var(--color-stamp);
+	}
+
+	.matrix .model-col {
+		font-weight: 500;
+		color: var(--color-ink);
+	}
+
+	.matrix td.flipped {
+		color: var(--color-stamp);
+		border-color: var(--color-stamp);
+	}
+
+	.matrix .none,
+	.matrix .err {
+		color: var(--color-mark);
 	}
 
 	.share {

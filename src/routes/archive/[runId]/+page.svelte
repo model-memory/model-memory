@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { tallyProducts } from '$lib/products';
+	import { displayModel, tallyProducts } from '$lib/products';
 
 	let { data } = $props();
 
@@ -53,7 +53,7 @@
 					{#each responses as r (r.model)}
 						<li class:errored={r.error !== null}>
 							<div class="answer-head">
-								<span class="model">{r.model}</span>
+								<span class="model" title={r.model}>{displayModel(r.model)}</span>
 								<span class="answer-meta">
 									{#if r.latency_ms !== null}
 										<span>{(r.latency_ms / 1000).toFixed(1)}s</span>

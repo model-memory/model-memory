@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { productKey, tallyProductCounts, tallyProducts } from '$lib/products';
+	import { displayModel, productKey, tallyProductCounts, tallyProducts } from '$lib/products';
 
 	let { data } = $props();
 
@@ -30,7 +30,7 @@
 			label: 'Latest entry',
 			runId: data.latest.run.id,
 			specimens: rows.slice(0, 5).map((r) => ({
-				model: r.model.replace(/^@cf\/[^/]+\//, ''),
+				model: displayModel(r.model),
 				answer: r.recommended_product as string
 			}))
 		};

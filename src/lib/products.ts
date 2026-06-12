@@ -2,6 +2,12 @@
 // returns free-form names ("Vercel", "vercel.com", "Vercel's platform");
 // these must count as one product when tallying.
 
+// Human-readable model name: Workers AI ids carry a '@cf/<org>/' prefix that
+// is noise in the UI; provider-prefixed unified-billing ids stay as-is.
+export function displayModel(modelId: string): string {
+	return modelId.replace(/^@cf\/[^/]+\//, '');
+}
+
 export function productKey(name: string): string {
 	let key = name.trim().toLowerCase();
 	key = key.replace(/^the\s+/, '');
