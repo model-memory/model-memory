@@ -16,6 +16,13 @@ URL).
   per-question weekly toggle), recent runs, and an operator ask form.
 - **`/archive/[runId]`** — one run: every model's answer, latency, the
   extracted product, and the consensus line.
+- **`/archive/q/[questionId]`** — trend page: share-of-voice bars across all
+  archived runs, funding status, and a per-run consensus timeline.
+- **`/archive/by/[address]`** — a wallet's "account page": its payments,
+  funded questions, and the runs its credits bought.
+- **JSON API** — `GET /api/runs/[id]` and
+  `GET /api/questions/[id]/history?limit=` for machine-readable, citable
+  exports (completed runs are cacheable/immutable).
 - **`POST /api/commission`** — paid commissioning via
   [x402](https://www.x402.org). Without an `X-PAYMENT` header it returns a 402
   challenge; with one it verifies + settles through the facilitator, records
@@ -48,7 +55,8 @@ await fetchWithPay('https://modelmemory.example/api/commission', {
 	body: JSON.stringify({
 		prompt: 'Where should I host my SvelteKit app?',
 		credits: 4, // 1 spent now, 3 left for weekly refreshes
-		weekly: true
+		weekly: true,
+		category: 'hosting' // powers per-category share-of-voice stats
 	})
 });
 ```
