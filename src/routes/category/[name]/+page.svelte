@@ -1,13 +1,9 @@
 <script lang="ts">
+	import Masthead from '$lib/Masthead.svelte';
+	import { stampDate } from '$lib/format';
 	import { resolve } from '$app/paths';
 
 	let { data } = $props();
-
-	function stamp(unixSeconds: number): string {
-		const d = new Date(unixSeconds * 1000);
-		const pad = (n: number) => String(n).padStart(2, '0');
-		return `${d.getUTCFullYear()}.${pad(d.getUTCMonth() + 1)}.${pad(d.getUTCDate())}`;
-	}
 </script>
 
 <svelte:head>
@@ -19,10 +15,7 @@
 </svelte:head>
 
 <div class="paper">
-	<header class="masthead">
-		<a class="mark" href={resolve('/')}>Model Memory</a>
-		<a class="meta" href={resolve('/archive')}>← The Archive</a>
-	</header>
+	<Masthead />
 
 	<main class="page">
 		<section>
@@ -69,7 +62,7 @@
 									>{q.top}</a
 								>
 							{/if}
-							<span class="logged">{stamp(q.at)}</span>
+							<span class="logged">{stampDate(q.at)}</span>
 						</span>
 					</li>
 				{/each}
@@ -84,37 +77,6 @@
 		margin: 0 auto;
 		padding: clamp(1.5rem, 4vw, 3rem) clamp(1.25rem, 5vw, 4rem) 4rem;
 		min-height: 100vh;
-	}
-
-	.masthead {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 1rem;
-		padding-bottom: 0.9rem;
-		border-bottom: 1px solid var(--color-ink);
-		margin-bottom: clamp(2rem, 6vw, 4rem);
-		font-family: var(--font-mono);
-		font-size: 0.72rem;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-	}
-
-	.masthead a {
-		text-decoration: none;
-		color: inherit;
-	}
-
-	.masthead .mark {
-		font-weight: 500;
-	}
-
-	.masthead .meta {
-		color: var(--color-mark);
-	}
-
-	.masthead .meta:hover {
-		color: var(--color-stamp);
 	}
 
 	.entry-header {

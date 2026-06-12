@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Masthead from '$lib/Masthead.svelte';
+	import { shortAddress, stampDate } from '$lib/format';
 	import { resolve } from '$app/paths';
 	import { displayModel, productKey, tallyProducts } from '$lib/products';
 
@@ -50,16 +52,6 @@
 		});
 		return { runs: runs.map((r) => r.run), rows };
 	});
-
-	function stamp(unixSeconds: number): string {
-		const d = new Date(unixSeconds * 1000);
-		const pad = (n: number) => String(n).padStart(2, '0');
-		return `${d.getUTCFullYear()}.${pad(d.getUTCMonth() + 1)}.${pad(d.getUTCDate())}`;
-	}
-
-	function short(address: string): string {
-		return address.length > 12 ? `${address.slice(0, 6)}…${address.slice(-4)}` : address;
-	}
 </script>
 
 <svelte:head>
@@ -67,16 +59,13 @@
 </svelte:head>
 
 <div class="paper">
-	<header class="masthead">
-		<a class="mark" href={resolve('/')}>Model Memory</a>
-		<a class="meta" href={resolve('/archive')}>← The Archive</a>
-	</header>
+	<Masthead />
 
 	<main class="page">
 		<section>
 			<div class="entry-header">
 				<span class="stamp">Tracked question</span>
-				<span class="logged">since {stamp(question.created_at)}</span>
+				<span class="logged">since {stampDate(question.created_at)}</span>
 			</div>
 
 			<p class="query">
@@ -103,7 +92,7 @@
 						funded by
 						{#each data.history.funders as funder, i (funder)}
 							<a href={resolve('/archive/by/[address]', { address: funder })}
-								><code>{short(funder)}</code></a
+								><code>{shortAddress(funder)}</code></a
 							>{i < data.history.funders.length - 1 ? ', ' : ''}
 						{/each}
 					</span>
@@ -152,7 +141,7 @@
 								{#each matrix.runs as run (run.id)}
 									<th
 										><a href={resolve('/archive/[runId]', { runId: run.id })}
-											>{stamp(run.created_at)}</a
+											>{stampDate(run.created_at)}</a
 										></th
 									>
 								{/each}
@@ -193,7 +182,7 @@
 					{#each timeline as { run, top, named, dissenters } (run.id)}
 						<li>
 							<a class="row-main" href={resolve('/archive/[runId]', { runId: run.id })}>
-								<span class="logged">{stamp(run.created_at)}</span>
+								<span class="logged">{stampDate(run.created_at)}</span>
 								{#if top}
 									<span class="pick">{top.name}</span>
 									<span class="count">{top.count}&thinsp;⁄&thinsp;{named}</span>
@@ -220,37 +209,6 @@
 		margin: 0 auto;
 		padding: clamp(1.5rem, 4vw, 3rem) clamp(1.25rem, 5vw, 4rem) 4rem;
 		min-height: 100vh;
-	}
-
-	.masthead {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 1rem;
-		padding-bottom: 0.9rem;
-		border-bottom: 1px solid var(--color-ink);
-		margin-bottom: clamp(2rem, 6vw, 4rem);
-		font-family: var(--font-mono);
-		font-size: 0.72rem;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-	}
-
-	.masthead a {
-		text-decoration: none;
-		color: inherit;
-	}
-
-	.masthead .mark {
-		font-weight: 500;
-	}
-
-	.masthead .meta {
-		color: var(--color-mark);
-	}
-
-	.masthead .meta:hover {
-		color: var(--color-stamp);
 	}
 
 	.entry-header {

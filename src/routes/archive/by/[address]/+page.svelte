@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Masthead from '$lib/Masthead.svelte';
+	import { shortAddress, stampDate } from '$lib/format';
 	import { resolve } from '$app/paths';
 
 	let { data } = $props();
@@ -19,27 +21,14 @@
 		remaining: profile.payments.reduce((s, p) => s + p.credits_remaining, 0),
 		spentUsdc: profile.payments.reduce((s, p) => s + p.amount_usdc_micro, 0) / 1e6
 	});
-
-	function stamp(unixSeconds: number): string {
-		const d = new Date(unixSeconds * 1000);
-		const pad = (n: number) => String(n).padStart(2, '0');
-		return `${d.getUTCFullYear()}.${pad(d.getUTCMonth() + 1)}.${pad(d.getUTCDate())}`;
-	}
-
-	function short(address: string): string {
-		return address.length > 12 ? `${address.slice(0, 6)}…${address.slice(-4)}` : address;
-	}
 </script>
 
 <svelte:head>
-	<title>{short(profile.payer)} — Model Memory</title>
+	<title>{shortAddress(profile.payer)} — Model Memory</title>
 </svelte:head>
 
 <div class="paper">
-	<header class="masthead">
-		<a class="mark" href={resolve('/')}>Model Memory</a>
-		<a class="meta" href={resolve('/archive')}>← The Archive</a>
-	</header>
+	<Masthead />
 
 	<main class="page">
 		<section>
@@ -70,7 +59,7 @@
 					{#each profile.payments as p (p.id)}
 						<li>
 							<span class="row-main">
-								<span class="logged">{stamp(p.created_at)}</span>
+								<span class="logged">{stampDate(p.created_at)}</span>
 								<span class="pick">
 									{p.credits} credit{p.credits === 1 ? '' : 's'} · {p.allocation}
 								</span>
@@ -86,7 +75,7 @@
 									<span class="qlink muted">every question</span>
 								{/if}
 								{#if p.transaction_ref}
-									<code class="tx">{short(p.transaction_ref)}</code>
+									<code class="tx">{shortAddress(p.transaction_ref)}</code>
 								{/if}
 							</span>
 						</li>
@@ -105,7 +94,7 @@
 						{#each profile.funded_runs as r (r.run_id)}
 							<li>
 								<a class="row-main" href={resolve('/archive/[runId]', { runId: r.run_id })}>
-									<span class="logged">{stamp(r.created_at)}</span>
+									<span class="logged">{stampDate(r.created_at)}</span>
 									<span class="pick">{r.prompt}</span>
 									<span class="count">{r.status}</span>
 								</a>
@@ -124,37 +113,6 @@
 		margin: 0 auto;
 		padding: clamp(1.5rem, 4vw, 3rem) clamp(1.25rem, 5vw, 4rem) 4rem;
 		min-height: 100vh;
-	}
-
-	.masthead {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 1rem;
-		padding-bottom: 0.9rem;
-		border-bottom: 1px solid var(--color-ink);
-		margin-bottom: clamp(2rem, 6vw, 4rem);
-		font-family: var(--font-mono);
-		font-size: 0.72rem;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-	}
-
-	.masthead a {
-		text-decoration: none;
-		color: inherit;
-	}
-
-	.masthead .mark {
-		font-weight: 500;
-	}
-
-	.masthead .meta {
-		color: var(--color-mark);
-	}
-
-	.masthead .meta:hover {
-		color: var(--color-stamp);
 	}
 
 	.entry-header {

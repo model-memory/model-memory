@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Masthead from '$lib/Masthead.svelte';
+	import { stampDateTime } from '$lib/format';
 	import { resolve } from '$app/paths';
 	import { displayModel, productKey, tallyProductCounts, tallyProducts } from '$lib/products';
 
@@ -22,11 +24,9 @@
 		if (!data.latest) return null;
 		const rows = data.latest.responses.filter((r) => r.recommended_product);
 		if (rows.length === 0) return null;
-		const d = new Date(data.latest.run.created_at * 1000);
-		const pad = (n: number) => String(n).padStart(2, '0');
 		return {
 			query: data.latest.run.prompt,
-			logged: `Logged ${d.getUTCFullYear()}.${pad(d.getUTCMonth() + 1)}.${pad(d.getUTCDate())} · ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`,
+			logged: `Logged ${stampDateTime(data.latest.run.created_at)}`,
 			label: 'Latest entry',
 			runId: data.latest.run.id,
 			specimens: rows.slice(0, 5).map((r) => ({
@@ -79,10 +79,7 @@
 </svelte:head>
 
 <div class="paper">
-	<header class="masthead">
-		<div class="mark">Model Memory</div>
-		<a class="meta" href={resolve('/archive')}>Vol. I &nbsp;·&nbsp; The Archive &rarr;</a>
-	</header>
+	<Masthead />
 
 	<main class="page">
 		<section class="hero">
@@ -207,34 +204,6 @@
 		margin: 0 auto;
 		padding: clamp(1.5rem, 4vw, 3rem) clamp(1.25rem, 5vw, 4rem) 4rem;
 		min-height: 100vh;
-	}
-
-	/* —— masthead —— */
-	.masthead {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
-		gap: 1rem;
-		padding-bottom: 0.9rem;
-		border-bottom: 1px solid var(--color-ink);
-		margin-bottom: clamp(3rem, 9vw, 6rem);
-		font-family: var(--font-mono);
-		font-size: 0.72rem;
-		letter-spacing: 0.18em;
-		text-transform: uppercase;
-	}
-
-	.masthead .mark {
-		font-weight: 500;
-	}
-
-	.masthead .meta {
-		color: var(--color-mark);
-		text-decoration: none;
-	}
-
-	a.meta:hover {
-		color: var(--color-stamp);
 	}
 
 	/* —— hero —— */
