@@ -52,7 +52,10 @@ export const POST: RequestHandler = async ({ platform, request, url }) => {
 	const hasTarget = Boolean(prompt || body.questionId);
 	const allocation: PaymentAllocation = body.allocation ?? (hasTarget ? 'single' : 'all');
 	if (allocation !== 'all' && !hasTarget && !(body.questionIds?.length ?? 0)) {
-		return json({ error: 'scoped allocations need a prompt, questionId, or questionIds' }, { status: 400 });
+		return json(
+			{ error: 'scoped allocations need a prompt, questionId, or questionIds' },
+			{ status: 400 }
+		);
 	}
 
 	const amountUsdcMicro = credits * cfg.creditPriceUsdcMicro;
@@ -87,7 +90,9 @@ export const POST: RequestHandler = async ({ platform, request, url }) => {
 	if (allocation === 'single') {
 		questionIds = targetQuestionId ? [targetQuestionId] : [];
 	} else if (allocation === 'subset') {
-		questionIds = [...new Set([...(body.questionIds ?? []), ...(targetQuestionId ? [targetQuestionId] : [])])];
+		questionIds = [
+			...new Set([...(body.questionIds ?? []), ...(targetQuestionId ? [targetQuestionId] : [])])
+		];
 	}
 
 	const payment = await gw.recordPayment({

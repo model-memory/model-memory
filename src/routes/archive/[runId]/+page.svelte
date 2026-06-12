@@ -1,0 +1,249 @@
+<script lang="ts">
+	import { resolve } from '$app/paths';
+
+	let { data } = $props();
+
+	const run = $derived(data.detail.run);
+	const responses = $derived(data.detail.responses);
+	const consensus = $derived.by(() => {
+		const named = responses
+			.map((r) => r.recommended_product)
+			.filter((p): p is string => Boolean(p));
+		if (named.length === 0) return null;
+		const counts: Record<string, number> = {};
+		for (const p of named) counts[p] = (counts[p] ?? 0) + 1;
+		const [top, n] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+		return { top, n, of: named.length };
+	});
+
+	function stamp(unixSeconds: number): string {
+		const d = new Date(unixSeconds * 1000);
+		const pad = (n: number) => String(n).padStart(2, '0');
+		return `${d.getUTCFullYear()}.${pad(d.getUTCMonth() + 1)}.${pad(d.getUTCDate())} · ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`;
+	}
+</script>
+
+<svelte:head>
+	<title>Run — Model Memory</title>
+</svelte:head>
+
+<div class="paper">
+	<header class="masthead">
+		<a class="mark" href={resolve('/')}>Model Memory</a>
+		<a class="meta" href={resolve('/archive')}>← The Archive</a>
+	</header>
+
+	<main class="page">
+		<section class="entry">
+			<div class="entry-header">
+				<span class="stamp">{run.status === 'running' ? 'In progress' : 'Archived'}</span>
+				<span class="logged">Logged {stamp(run.created_at)}</span>
+			</div>
+
+			<p class="query">
+				<span class="quote">&ldquo;</span>{run.prompt}<span class="quote">&rdquo;</span>
+			</p>
+
+			{#if responses.length === 0}
+				<p class="notice">
+					Waiting on the machines — {run.model_count} models queried, none archived yet. Refresh in a
+					moment.
+				</p>
+			{:else}
+				<ul class="answers">
+					{#each responses as r (r.model)}
+						<li class:errored={r.error !== null}>
+							<div class="answer-head">
+								<span class="model">{r.model}</span>
+								<span class="answer-meta">
+									{#if r.latency_ms !== null}
+										<span>{(r.latency_ms / 1000).toFixed(1)}s</span>
+									{/if}
+									{#if r.recommended_product}
+										<span class="product">※ {r.recommended_product}</span>
+									{:else if r.error}
+										<span class="errmark">error</span>
+									{/if}
+								</span>
+							</div>
+							{#if r.response_text}
+								<p class="response">{r.response_text}</p>
+							{:else if r.error}
+								<p class="response error-text">{r.error}</p>
+							{/if}
+						</li>
+					{/each}
+				</ul>
+
+				{#if consensus}
+					<p class="consensus">
+						Consensus {consensus.n}&thinsp;⁄&thinsp;{consensus.of} for
+						<em>{consensus.top}</em>.
+					</p>
+				{/if}
+			{/if}
+		</section>
+	</main>
+</div>
+
+<style>
+	.paper {
+		max-width: 920px;
+		margin: 0 auto;
+		padding: clamp(1.5rem, 4vw, 3rem) clamp(1.25rem, 5vw, 4rem) 4rem;
+		min-height: 100vh;
+	}
+
+	.masthead {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		padding-bottom: 0.9rem;
+		border-bottom: 1px solid var(--color-ink);
+		margin-bottom: clamp(2rem, 6vw, 4rem);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+	}
+
+	.masthead a {
+		text-decoration: none;
+		color: inherit;
+	}
+
+	.masthead .mark {
+		font-weight: 500;
+	}
+
+	.masthead .meta {
+		color: var(--color-mark);
+	}
+
+	.masthead .meta:hover {
+		color: var(--color-stamp);
+	}
+
+	.entry-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		margin-bottom: 1.5rem;
+	}
+
+	.entry-header .stamp {
+		color: var(--color-stamp);
+		border: 1px solid var(--color-stamp);
+		padding: 0.25rem 0.55rem;
+		display: inline-block;
+		transform: rotate(-1.2deg);
+	}
+
+	.entry-header .logged {
+		color: var(--color-mark);
+	}
+
+	.query {
+		font-family: var(--font-display);
+		font-size: clamp(1.7rem, 4vw, 2.6rem);
+		line-height: 1.18;
+		font-style: italic;
+		margin: 0 0 2rem;
+		max-width: 30ch;
+	}
+
+	.query .quote {
+		color: var(--color-stamp);
+		font-style: normal;
+		margin: 0 0.05em;
+	}
+
+	.answers {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.answers li {
+		padding: 1rem 0;
+		border-top: 1px dashed var(--color-rule);
+	}
+
+	.answers li:last-child {
+		border-bottom: 1px dashed var(--color-rule);
+	}
+
+	.answer-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 0.5rem 1rem;
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+	}
+
+	.answer-head .model {
+		font-weight: 500;
+	}
+
+	.answer-meta {
+		display: flex;
+		gap: 0.9rem;
+		font-size: 0.72rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--color-mark);
+	}
+
+	.answer-meta .product {
+		color: var(--color-stamp);
+		text-transform: none;
+		letter-spacing: 0;
+		font-size: 0.85rem;
+	}
+
+	.answer-meta .errmark {
+		color: var(--color-stamp);
+	}
+
+	.response {
+		font-family: var(--font-body);
+		font-size: 1rem;
+		line-height: 1.55;
+		margin: 0.6rem 0 0;
+		white-space: pre-wrap;
+		max-height: 14rem;
+		overflow-y: auto;
+	}
+
+	.response.error-text {
+		color: var(--color-mark);
+		font-style: italic;
+	}
+
+	.consensus {
+		margin: 1.5rem 0 0;
+		font-family: var(--font-body);
+		font-style: italic;
+		color: var(--color-mark);
+		font-size: 1rem;
+	}
+
+	.consensus em {
+		color: var(--color-stamp);
+	}
+
+	.notice {
+		font-family: var(--font-body);
+		font-style: italic;
+		color: var(--color-mark);
+	}
+</style>

@@ -68,10 +68,7 @@ export function paymentRequirements(
 }
 
 export function challenge(requirements: PaymentRequirements, error = 'Payment required'): Response {
-	return Response.json(
-		{ x402Version: 1, error, accepts: [requirements] },
-		{ status: 402 }
-	);
+	return Response.json({ x402Version: 1, error, accepts: [requirements] }, { status: 402 });
 }
 
 // Verify the X-PAYMENT header with the facilitator, then settle on-chain.
