@@ -39,11 +39,14 @@
 					{/if}
 				</form>
 				{#if data.questions.length === 0}
-					<p class="notice">
-						{data.search
-							? 'Nothing matches that search.'
-							: 'No questions tracked yet. Commission the first one below.'}
-					</p>
+					{#if data.search}
+						<p class="notice">Nothing matches that search.</p>
+					{:else}
+						<p class="notice">
+							No questions tracked yet.
+							<a class="link" href={resolve('/commission')}>Commission the first one &rarr;</a>
+						</p>
+					{/if}
 				{:else}
 					<ul class="ledger">
 						{#each data.questions as q (q.id)}

@@ -86,7 +86,12 @@
 			</div>
 
 			{#if !data.enabled}
-				<p class="notice">Payments are not configured on this deployment yet.</p>
+				<p class="notice">
+					Payments are not configured on this deployment yet — the archive is still browsable.
+				</p>
+				<p class="actions">
+					<a class="button ghost" href={resolve('/archive')}>Browse the archive &rarr;</a>
+				</p>
 			{:else if result}
 				<p class="query">Archived.</p>
 				<p class="notice">

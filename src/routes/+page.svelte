@@ -178,8 +178,10 @@
 					<div>
 						<span class="step-title">You refresh.</span>
 						<span class="step-body"
-							>Commission a new query or refresh an existing one for a few cents in stablecoin via
-							x402. We pay the model costs; the result enters the public archive.</span
+							><a class="step-link" href={resolve('/commission')}
+								>Commission a new query or refresh an existing one</a
+							> for a few cents in stablecoin via x402. We pay the model costs; the result enters the
+							public archive.</span
 						>
 					</div>
 				</li>
@@ -187,7 +189,10 @@
 		</section>
 
 		<section class="coming-soon">
-			<p>Beta opening soon.</p>
+			<p class="cta-row">
+				<a class="button" href={resolve('/archive')}>Browse the archive</a>
+				<a class="button ghost" href={resolve('/commission')}>Commission a query &rarr;</a>
+			</p>
 			<p class="sig">— recommendation intelligence, made public</p>
 		</section>
 	</main>
@@ -454,11 +459,53 @@
 		text-align: center;
 	}
 
-	.coming-soon p:first-child {
-		font-family: var(--font-display);
-		font-style: italic;
-		font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+	.cta-row {
+		display: flex;
+		justify-content: center;
+		gap: 1rem;
+		flex-wrap: wrap;
 		margin: 0;
+	}
+
+	.button {
+		display: inline-block;
+		background: var(--color-ink);
+		color: var(--color-paper);
+		border: 1px solid var(--color-ink);
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		padding: 0.7rem 1.6rem;
+		text-decoration: none;
+	}
+
+	.button:hover {
+		background: var(--color-stamp);
+		border-color: var(--color-stamp);
+	}
+
+	.button.ghost {
+		background: transparent;
+		color: var(--color-ink);
+		border-color: var(--color-rule);
+	}
+
+	.button.ghost:hover {
+		color: var(--color-stamp);
+		border-color: var(--color-stamp);
+		background: transparent;
+	}
+
+	.step-link {
+		color: inherit;
+		text-decoration: underline;
+		text-decoration-color: var(--color-stamp);
+		text-underline-offset: 0.2em;
+	}
+
+	.step-link:hover {
+		color: var(--color-stamp);
 	}
 
 	.coming-soon .sig {

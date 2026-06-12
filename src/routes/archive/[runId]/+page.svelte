@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Masthead from '$lib/Masthead.svelte';
 	import { stampDateTime } from '$lib/format';
+	import { invalidateAll } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { displayModel, tallyProducts } from '$lib/products';
 
@@ -15,6 +16,14 @@
 		const tally = tallyProducts(named);
 		if (tally.length === 0) return null;
 		return { top: tally[0].name, n: tally[0].count, of: named.length };
+	});
+
+	// Live progress: while the fan-out runs, refetch every few seconds so
+	// answers appear as models respond — no manual reload.
+	$effect(() => {
+		if (run.status !== 'running') return;
+		const timer = setInterval(() => void invalidateAll(), 5000);
+		return () => clearInterval(timer);
 	});
 </script>
 
@@ -43,11 +52,25 @@
 				<span class="quote">&ldquo;</span>{run.prompt}<span class="quote">&rdquo;</span>
 			</p>
 
-			{#if responses.length === 0}
-				<p class="notice">
-					Waiting on the machines — {run.model_count} models queried, none archived yet. Refresh in a
-					moment.
+			{#if run.question_id}
+				<p class="crossref">
+					<a href={resolve('/archive/q/[questionId]', { questionId: run.question_id })}
+						>This question's history &rarr;</a
+					>
 				</p>
+			{/if}
+
+			{#if run.status === 'running'}
+				<p class="notice live">
+					<span class="pulse" aria-hidden="true"></span>
+					{responses.length} of {run.model_count} models answered — updating live.
+				</p>
+			{/if}
+
+			{#if responses.length === 0}
+				{#if run.status !== 'running'}
+					<p class="notice">No responses were archived for this run.</p>
+				{/if}
 			{:else}
 				<ul class="answers">
 					{#each responses as r (`${r.model}#${r.sample_index}`)}
@@ -220,5 +243,46 @@
 		font-family: var(--font-body);
 		font-style: italic;
 		color: var(--color-mark);
+	}
+
+	.crossref {
+		margin: -1rem 0 1.5rem;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.crossref a {
+		color: var(--color-mark);
+		text-decoration: none;
+	}
+
+	.crossref a:hover {
+		color: var(--color-stamp);
+	}
+
+	.notice.live {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+
+	.pulse {
+		width: 0.55rem;
+		height: 0.55rem;
+		border-radius: 50%;
+		background: var(--color-stamp);
+		animation: pulse 1.6s ease-in-out infinite;
+	}
+
+	@keyframes pulse {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.25;
+		}
 	}
 </style>
