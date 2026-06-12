@@ -9,5 +9,18 @@
   },
   "observability": {
     "enabled": true
+  },
+  // RPC to the llm-gateway Worker (service-binding-only, same account).
+  "services": [{ "binding": "LLM_GATEWAY", "service": "llm-gateway" }],
+  "vars": {
+    // x402 payment config for /api/commission. Leave X402_PAY_TO empty to
+    // disable paid commissioning (the endpoint returns 503).
+    "X402_PAY_TO": "",
+    "X402_NETWORK": "base-sepolia",
+    "X402_FACILITATOR_URL": "https://x402.org/facilitator",
+    // USDC contract for the network above (default: Base Sepolia USDC).
+    "X402_ASSET": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+    // Price of one refresh credit, in USDC micro-units (1e6 = $1).
+    "X402_CREDIT_PRICE_USDC_MICRO": "50000"
   }
 }
