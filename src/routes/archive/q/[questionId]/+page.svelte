@@ -85,7 +85,9 @@
 
 			<p class="status-line">
 				{#if question.category}
-					<span class="tag">{question.category}</span>
+					<a class="tag pay" href={resolve('/category/[name]', { name: question.category })}
+						>{question.category}</a
+					>
 				{/if}
 				<span class="tag" class:on={question.weekly === 1}
 					>weekly: {question.weekly ? 'on' : 'off'}</span
@@ -119,7 +121,9 @@
 				<ul class="share">
 					{#each share.tally as { name, count } (name)}
 						<li>
-							<span class="share-name">{name}</span>
+							<a class="share-name" href={resolve('/products/[slug]', { slug: productKey(name) })}
+								>{name}</a
+							>
 							<span class="bar" aria-hidden="true">
 								<span class="fill" style={`width: ${Math.round((count / share.total) * 100)}%`}
 								></span>
@@ -429,6 +433,12 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+		color: var(--color-ink);
+		text-decoration: none;
+	}
+
+	a.share-name:hover {
+		color: var(--color-stamp);
 	}
 
 	.bar {
