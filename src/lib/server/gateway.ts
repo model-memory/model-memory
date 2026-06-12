@@ -89,6 +89,20 @@ export type QuestionHistory = {
 	funders: string[];
 };
 
+export type PayerProfile = {
+	payer: string;
+	payments: PaymentRow[];
+	links: Array<{ payment_id: string; question_id: string; text: string }>;
+	funded_runs: Array<{
+		run_id: string;
+		payment_id: string;
+		question_id: string;
+		prompt: string;
+		status: RunStatus;
+		created_at: number;
+	}>;
+};
+
 export type RecordPaymentInput = {
 	payer?: string;
 	network?: string;
@@ -115,6 +129,7 @@ export interface LlmGateway {
 	recordPayment(input: RecordPaymentInput): Promise<PaymentRow>;
 	refreshQuestion(questionId: string): Promise<RefreshResult>;
 	getQuestionHistory(questionId: string, limit?: number): Promise<QuestionHistory>;
+	getPayerProfile(payer: string): Promise<PayerProfile>;
 	getBalances(): Promise<BalanceSummary>;
 }
 

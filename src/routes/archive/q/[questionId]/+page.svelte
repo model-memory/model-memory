@@ -72,7 +72,9 @@
 					<span class="funders">
 						funded by
 						{#each data.history.funders as funder, i (funder)}
-							<code>{short(funder)}</code>{i < data.history.funders.length - 1 ? ', ' : ''}
+							<a href={resolve('/archive/by/[address]', { address: funder })}
+								><code>{short(funder)}</code></a
+							>{i < data.history.funders.length - 1 ? ', ' : ''}
 						{/each}
 					</span>
 				{/if}
@@ -236,6 +238,14 @@
 
 	.tag.on {
 		border-color: var(--color-stamp);
+		color: var(--color-stamp);
+	}
+
+	.funders a {
+		text-decoration: none;
+	}
+
+	.funders a:hover code {
 		color: var(--color-stamp);
 	}
 
