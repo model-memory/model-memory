@@ -89,6 +89,16 @@ export type QuestionHistory = {
 	funders: string[];
 };
 
+export type RecordPaymentInput = {
+	payer?: string;
+	network?: string;
+	transactionRef?: string;
+	amountUsdcMicro: number;
+	credits: number;
+	allocation: PaymentAllocation;
+	questionIds?: string[];
+};
+
 export interface LlmGateway {
 	createRun(prompt: string, options?: { questionId?: string }): Promise<RunSummary>;
 	getRun(runId: string): Promise<RunDetail>;
@@ -102,15 +112,7 @@ export interface LlmGateway {
 	addQuestion(text: string): Promise<QuestionRow>;
 	setQuestionActive(questionId: string, active: boolean): Promise<void>;
 	setQuestionWeekly(questionId: string, weekly: boolean): Promise<void>;
-	recordPayment(input: {
-		payer?: string;
-		network?: string;
-		transactionRef?: string;
-		amountUsdcMicro: number;
-		credits: number;
-		allocation: PaymentAllocation;
-		questionIds?: string[];
-	}): Promise<PaymentRow>;
+	recordPayment(input: RecordPaymentInput): Promise<PaymentRow>;
 	refreshQuestion(questionId: string): Promise<RefreshResult>;
 	getQuestionHistory(questionId: string, limit?: number): Promise<QuestionHistory>;
 	getBalances(): Promise<BalanceSummary>;
