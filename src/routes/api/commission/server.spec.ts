@@ -107,6 +107,7 @@ function mockGateway(): MockGateway {
 				status: 'running',
 				model_count: 13,
 				question_id: questionId,
+				content_hash: null,
 				created_at: 1,
 				completed_at: null
 			};

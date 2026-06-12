@@ -93,6 +93,9 @@
 				<span class="tag" class:on={data.credits > 0}>
 					{data.credits} refresh{data.credits === 1 ? '' : 'es'} funded
 				</span>
+				<a class="tag pay" href={`${resolve('/commission')}?questionId=${question.id}`}>
+					refresh — pay with wallet
+				</a>
 				{#if data.history.funders.length > 0}
 					<span class="funders">
 						funded by
@@ -305,6 +308,16 @@
 	}
 
 	.tag.on {
+		border-color: var(--color-stamp);
+		color: var(--color-stamp);
+	}
+
+	a.tag.pay {
+		text-decoration: none;
+		color: var(--color-ink);
+	}
+
+	a.tag.pay:hover {
 		border-color: var(--color-stamp);
 		color: var(--color-stamp);
 	}

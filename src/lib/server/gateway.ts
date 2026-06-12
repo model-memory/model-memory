@@ -11,6 +11,7 @@ export type RunSummary = {
 	status: RunStatus;
 	model_count: number;
 	question_id: string | null;
+	content_hash: string | null;
 	created_at: number;
 	completed_at: number | null;
 };
@@ -18,6 +19,7 @@ export type RunSummary = {
 export type ResponseRow = {
 	run_id: string;
 	model: string;
+	sample_index: number;
 	provider: string;
 	response_text: string | null;
 	latency_ms: number | null;
@@ -81,6 +83,7 @@ export type RefreshResult = {
 export type QuestionHistoryPick = {
 	run_id: string;
 	model: string;
+	sample_index: number;
 	provider: string;
 	recommended_product: string | null;
 	error: string | null;
@@ -95,6 +98,16 @@ export type QuestionHistory = {
 	question: QuestionRow;
 	runs: QuestionHistoryRun[];
 	funders: string[];
+};
+
+export type ExtractedPick = {
+	run_id: string;
+	run_created_at: number;
+	question_id: string;
+	question_text: string;
+	category: string | null;
+	model: string;
+	recommended_product: string;
 };
 
 export type PayerProfile = {
@@ -139,6 +152,7 @@ export interface LlmGateway {
 	refreshQuestion(questionId: string): Promise<RefreshResult>;
 	getQuestionHistory(questionId: string, limit?: number): Promise<QuestionHistory>;
 	getPayerProfile(payer: string): Promise<PayerProfile>;
+	listExtractedPicks(limit?: number): Promise<ExtractedPick[]>;
 	getBalances(): Promise<BalanceSummary>;
 }
 

@@ -113,8 +113,10 @@
 				<h2 class="section-title">Commission a query</h2>
 				<p class="notice">
 					No accounts here — your wallet is your identity. Pay a few cents in USDC via
-					<a class="link" href="https://www.x402.org" rel="external">x402</a> and the result enters the
-					public archive. One payment buys refresh credits; unspent credits fund that query's weekly refreshes.
+					<a class="link" href="https://www.x402.org" rel="external">x402</a> and the result enters
+					the public archive. One payment buys refresh credits; unspent credits fund that query's
+					weekly refreshes.
+					<a class="link" href={resolve('/commission')}>Pay in the browser &rarr;</a>
 				</p>
 				<pre class="howto">{`# new query: 1 refresh now + 3 banked for weekly sweeps
 POST /api/commission
