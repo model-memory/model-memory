@@ -1,9 +1,20 @@
 {
 	"extends": "./.svelte-kit/tsconfig.json",
+	// Keep svelte-check off adapter build artifacts (created by `pnpm build`,
+	// e.g. during test:e2e) — they otherwise fail the typecheck.
+	"exclude": [
+		"node_modules/**",
+		".svelte-kit/output/**",
+		".svelte-kit/cloudflare/**",
+		".svelte-kit/cloudflare-tmp/**"
+	],
 	"compilerOptions": {
 		"rewriteRelativeImportExtensions": true,
 		"allowJs": true,
-		"checkJs": true,
+		// Off: worker-configuration.d.ts imports the built worker when
+		// `.svelte-kit/cloudflare` exists, and checkJs would error-check those
+		// generated chunks. Project source is TypeScript.
+		"checkJs": false,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": true,
