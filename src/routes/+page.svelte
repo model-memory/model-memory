@@ -49,14 +49,11 @@
 	// printed numbers until then.
 	const MIN_CATEGORY_PICKS = 5;
 	const insights = $derived.by(() => {
-		const byCategory = new Map<string, { name: string; count: number }[]>();
+		const byCategory: Record<string, { name: string; count: number }[]> = {};
 		for (const s of data.categoryStats) {
-			byCategory.set(s.category, [
-				...(byCategory.get(s.category) ?? []),
-				{ name: s.product, count: s.n }
-			]);
+			byCategory[s.category] = [...(byCategory[s.category] ?? []), { name: s.product, count: s.n }];
 		}
-		const real = [...byCategory.entries()]
+		const real = Object.entries(byCategory)
 			.map(([category, entries]) => {
 				const tally = tallyProductCounts(entries);
 				const total = tally.reduce((sum, t) => sum + t.count, 0);

@@ -89,6 +89,21 @@
 							</li>
 						{/each}
 					</ul>
+					{#if data.page > 1 || data.hasOlder}
+						<nav class="pager">
+							{#if data.page > 1}
+								<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve()-based path plus a query string -->
+								<a href={`${resolve('/archive')}?page=${data.page - 1}`}>&larr; newer</a>
+							{:else}
+								<span></span>
+							{/if}
+							<span class="page-no">page {data.page}</span>
+							{#if data.hasOlder}
+								<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- resolve()-based path plus a query string -->
+								<a href={`${resolve('/archive')}?page=${data.page + 1}`}>older &rarr;</a>
+							{/if}
+						</nav>
+					{/if}
 				{/if}
 			</section>
 
@@ -232,6 +247,31 @@ POST /api/commission
 	}
 
 	.logged {
+		color: var(--color-mark);
+	}
+
+	.pager {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 1rem;
+		margin-top: 1rem;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.pager a {
+		color: var(--color-mark);
+		text-decoration: none;
+	}
+
+	.pager a:hover {
+		color: var(--color-stamp);
+	}
+
+	.pager .page-no {
 		color: var(--color-mark);
 	}
 

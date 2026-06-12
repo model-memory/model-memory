@@ -4,11 +4,13 @@
 	let { data } = $props();
 
 	const profile = $derived(data.profile);
-	const textByQuestion = $derived(new Map(profile.links.map((l) => [l.question_id, l.text])));
+	const textByQuestion = $derived(
+		Object.fromEntries(profile.links.map((l) => [l.question_id, l.text]))
+	);
 	const linksByPayment = $derived.by(() => {
-		const m = new Map<string, string[]>();
+		const m: Record<string, string[]> = {};
 		for (const l of profile.links) {
-			m.set(l.payment_id, [...(m.get(l.payment_id) ?? []), l.question_id]);
+			m[l.payment_id] = [...(m[l.payment_id] ?? []), l.question_id];
 		}
 		return m;
 	});
@@ -75,9 +77,9 @@
 								<span class="count">{p.credits_remaining} left</span>
 							</span>
 							<span class="row-side">
-								{#each linksByPayment.get(p.id) ?? [] as qid (qid)}
+								{#each linksByPayment[p.id] ?? [] as qid (qid)}
 									<a class="qlink" href={resolve('/archive/q/[questionId]', { questionId: qid })}>
-										{textByQuestion.get(qid) ?? qid}
+										{textByQuestion[qid] ?? qid}
 									</a>
 								{/each}
 								{#if p.allocation === 'all'}
