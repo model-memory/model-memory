@@ -4,9 +4,9 @@
 # Deploy llm-gateway first so the LLM_GATEWAY service binding resolves.
 name: Deploy
 
+# Disabled while prototyping: manual trigger only. Restore the push->main
+# trigger when deployment is set up.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 concurrency: deploy-model-memory

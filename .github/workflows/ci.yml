@@ -1,8 +1,9 @@
 name: CI
 
+# Disabled while prototyping: manual trigger only. Restore push/pull_request
+# triggers when deployment is set up.
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   test:
