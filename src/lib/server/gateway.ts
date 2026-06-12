@@ -31,7 +31,14 @@ export type QuestionRow = {
 	text: string;
 	active: number;
 	weekly: number;
+	category: string | null;
 	created_at: number;
+};
+
+export type CategoryStat = {
+	category: string;
+	product: string;
+	n: number;
 };
 
 export type RunDetail = {
@@ -123,7 +130,8 @@ export interface LlmGateway {
 	}): Promise<RunSummary[]>;
 	getQuestion(questionId: string): Promise<QuestionRow | null>;
 	listQuestions(includeInactive?: boolean): Promise<QuestionRow[]>;
-	addQuestion(text: string): Promise<QuestionRow>;
+	addQuestion(text: string, category?: string): Promise<QuestionRow>;
+	getCategoryStats(): Promise<CategoryStat[]>;
 	setQuestionActive(questionId: string, active: boolean): Promise<void>;
 	setQuestionWeekly(questionId: string, weekly: boolean): Promise<void>;
 	recordPayment(input: RecordPaymentInput): Promise<PaymentRow>;

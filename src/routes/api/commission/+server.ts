@@ -20,6 +20,8 @@ type CommissionBody = {
 	questionIds?: string[];
 	weekly?: boolean;
 	refresh?: boolean;
+	/** optional category for a new question, e.g. 'hosting' */
+	category?: string;
 };
 
 type Commission = {
@@ -33,6 +35,7 @@ type Commission = {
 	linkIds: string[];
 	weekly?: boolean;
 	refresh: boolean;
+	category?: string;
 };
 
 function invalid(message: string): { error: string } {
@@ -58,6 +61,14 @@ function parseCommission(body: CommissionBody): Commission | string {
 		return 'pass either prompt (new question) or questionId (existing), not both';
 	}
 
+	const category = body.category?.trim().toLowerCase() || undefined;
+	if (category && category.length > 40) {
+		return 'category must be at most 40 characters';
+	}
+	if (category && !prompt) {
+		return 'category only applies when creating a question via prompt';
+	}
+
 	const hasTarget = Boolean(prompt || questionId);
 	const allocation: PaymentAllocation =
 		body.allocation ?? (hasTarget ? 'single' : questionIds.length > 0 ? 'subset' : 'all');
@@ -73,7 +84,8 @@ function parseCommission(body: CommissionBody): Commission | string {
 			targetId: questionId,
 			linkIds: [],
 			weekly: body.weekly,
-			refresh: body.refresh !== false
+			refresh: body.refresh !== false,
+			category
 		};
 	}
 
@@ -97,7 +109,8 @@ function parseCommission(body: CommissionBody): Commission | string {
 			targetId,
 			linkIds: targetId ? [targetId] : [],
 			weekly: body.weekly,
-			refresh: body.refresh !== false
+			refresh: body.refresh !== false,
+			category
 		};
 	}
 
@@ -113,7 +126,8 @@ function parseCommission(body: CommissionBody): Commission | string {
 		targetId: questionId,
 		linkIds,
 		weekly: body.weekly,
-		refresh: body.refresh !== false
+		refresh: body.refresh !== false,
+		category
 	};
 }
 
@@ -185,7 +199,7 @@ export const POST: RequestHandler = async ({ platform, request, url }) => {
 	let targetQuestionId = commission.targetId;
 	let linkIds = commission.linkIds;
 	if (commission.prompt) {
-		targetQuestionId = (await gw.addQuestion(commission.prompt)).id;
+		targetQuestionId = (await gw.addQuestion(commission.prompt, commission.category)).id;
 		if (commission.allocation !== 'all') {
 			linkIds = [...new Set([...linkIds, targetQuestionId])];
 		}

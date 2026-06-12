@@ -32,12 +32,13 @@ function mockGateway(): MockGateway {
 	const runs: RunSummary[] = [];
 	const state = { questions, payments, links, runs, mints: 0 };
 
-	function seedQuestion(text: string): QuestionRow {
+	function seedQuestion(text: string, category: string | null = null): QuestionRow {
 		const q: QuestionRow = {
 			id: `q${questions.size + 1}`,
 			text,
 			active: 1,
 			weekly: 1,
+			category,
 			created_at: 1
 		};
 		questions.set(q.id, q);
@@ -48,9 +49,9 @@ function mockGateway(): MockGateway {
 		async getQuestion(id) {
 			return questions.get(id) ?? null;
 		},
-		async addQuestion(text) {
+		async addQuestion(text, category) {
 			const existing = [...questions.values()].find((q) => q.text === text);
-			return existing ?? seedQuestion(text);
+			return existing ?? seedQuestion(text, category?.trim().toLowerCase() || null);
 		},
 		async setQuestionWeekly(id, weekly) {
 			const q = questions.get(id);
@@ -286,6 +287,19 @@ describe('POST /api/commission — settlement and fulfillment', () => {
 		expect(body.run?.question_id).toBe(body.question_id);
 		expect(body.balances.questions[0].available_credits).toBe(3);
 		expect(gw.state.questions.get(body.question_id)?.weekly).toBe(1);
+	});
+
+	it('records the category on a new question', async () => {
+		const res = await post(gw, { prompt: 'Where to host?', category: ' Hosting ' }, true);
+		expect(res.status).toBe(200);
+		const body = (await res.json()) as { question_id: string };
+		expect(gw.state.questions.get(body.question_id)?.category).toBe('hosting');
+	});
+
+	it('rejects category without a prompt', async () => {
+		const q = gw.seedQuestion('tracked');
+		const res = await post(gw, { questionId: q.id, category: 'hosting' });
+		expect(res.status).toBe(400);
 	});
 
 	it('treats bare questionIds as a subset top-up with no refresh', async () => {

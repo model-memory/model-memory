@@ -20,17 +20,25 @@ export type ProductTally = {
 // Group names by canonical key; each tally displays the most frequent
 // original spelling. Sorted by count descending, ties by name.
 export function tallyProducts(names: Array<string | null | undefined>): ProductTally[] {
+	return tallyProductCounts(names.map((name) => ({ name, count: 1 })));
+}
+
+// Weighted variant for pre-aggregated (name, count) pairs, e.g. the
+// gateway's category stats.
+export function tallyProductCounts(
+	entries: Array<{ name: string | null | undefined; count: number }>
+): ProductTally[] {
 	const groups = new Map<string, { count: number; forms: Map<string, number> }>();
 
-	for (const raw of names) {
-		if (!raw) continue;
+	for (const { name: raw, count } of entries) {
+		if (!raw || count <= 0) continue;
 		const name = raw.trim();
 		if (!name) continue;
 		const key = productKey(name);
 		if (!key) continue;
 		const group = groups.get(key) ?? { count: 0, forms: new Map() };
-		group.count += 1;
-		group.forms.set(name, (group.forms.get(name) ?? 0) + 1);
+		group.count += count;
+		group.forms.set(name, (group.forms.get(name) ?? 0) + count);
 		groups.set(key, group);
 	}
 

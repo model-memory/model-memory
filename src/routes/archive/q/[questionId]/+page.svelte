@@ -62,6 +62,9 @@
 			</p>
 
 			<p class="status-line">
+				{#if question.category}
+					<span class="tag">{question.category}</span>
+				{/if}
 				<span class="tag" class:on={question.weekly === 1}
 					>weekly: {question.weekly ? 'on' : 'off'}</span
 				>

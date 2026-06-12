@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { productKey, tallyProducts } from './products';
+import { productKey, tallyProductCounts, tallyProducts } from './products';
 
 describe('productKey', () => {
 	it('canonicalizes case, articles, possessives, and TLDs', () => {
@@ -20,5 +20,17 @@ describe('tallyProducts', () => {
 
 	it('ignores empty and null entries', () => {
 		expect(tallyProducts([null, undefined, '  '])).toEqual([]);
+	});
+});
+
+describe('tallyProductCounts', () => {
+	it('merges weighted pre-aggregated counts across spellings', () => {
+		const tally = tallyProductCounts([
+			{ name: 'Vercel', count: 5 },
+			{ name: 'vercel.com', count: 2 },
+			{ name: 'Netlify', count: 4 }
+		]);
+		expect(tally[0]).toEqual({ name: 'Vercel', count: 7 });
+		expect(tally[1]).toEqual({ name: 'Netlify', count: 4 });
 	});
 });

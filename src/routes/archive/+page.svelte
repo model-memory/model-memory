@@ -45,6 +45,9 @@
 									>{q.text}</a
 								>
 								<span class="q-meta">
+									{#if q.category}
+										<span class="tag">{q.category}</span>
+									{/if}
 									<span class="credits" class:unfunded={credits === 0}>
 										{credits} refresh{credits === 1 ? '' : 'es'} funded
 									</span>
@@ -101,7 +104,7 @@
 				<pre class="howto">{`# new query: 1 refresh now + 3 banked for weekly sweeps
 POST /api/commission
 { "prompt": "Where should I host my SvelteKit app?",
-  "credits": 4, "weekly": true }
+  "credits": 4, "weekly": true, "category": "hosting" }
 
 # refresh an existing query
 { "questionId": "<id>", "credits": 1 }

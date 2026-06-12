@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { productKey, tallyProducts } from '$lib/products';
+	import { productKey, tallyProductCounts, tallyProducts } from '$lib/products';
 
 	let { data } = $props();
 
@@ -39,11 +39,38 @@
 	const entry = $derived(live ?? fallback);
 	const consensusTop = $derived(tallyProducts(entry.specimens.map((s) => s.answer))[0]);
 
-	const insights = [
+	const fallbackInsights = [
 		{ stat: '87%', label: 'of hosting queries name Vercel' },
 		{ stat: '73%', label: 'of database queries name Supabase' },
 		{ stat: '94%', label: 'of router queries name OpenRouter' }
 	];
+
+	// Real insights once categorized questions have enough archived picks;
+	// printed numbers until then.
+	const MIN_CATEGORY_PICKS = 5;
+	const insights = $derived.by(() => {
+		const byCategory = new Map<string, { name: string; count: number }[]>();
+		for (const s of data.categoryStats) {
+			byCategory.set(s.category, [
+				...(byCategory.get(s.category) ?? []),
+				{ name: s.product, count: s.n }
+			]);
+		}
+		const real = [...byCategory.entries()]
+			.map(([category, entries]) => {
+				const tally = tallyProductCounts(entries);
+				const total = tally.reduce((sum, t) => sum + t.count, 0);
+				return { category, top: tally[0], total };
+			})
+			.filter((c) => c.total >= MIN_CATEGORY_PICKS)
+			.sort((a, b) => b.total - a.total)
+			.slice(0, 3)
+			.map((c) => ({
+				stat: `${Math.round((c.top.count / c.total) * 100)}%`,
+				label: `of ${c.category} queries name ${c.top.name}`
+			}));
+		return real.length > 0 ? real : fallbackInsights;
+	});
 </script>
 
 <svelte:head>
