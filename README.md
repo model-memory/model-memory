@@ -1,42 +1,82 @@
-# sv
+# Model Memory
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+An archive of which products LLMs recommend, tracked over time — market
+research for the post-search era. This is the public face: a SvelteKit app on
+Cloudflare Workers. The engine is the sibling
+[`llm-gateway`](https://github.com/model-memory/llm-gateway) Worker, reached
+via the `LLM_GATEWAY` service binding (RPC only — the gateway has no public
+URL).
 
-## Creating a project
+## How it fits together
 
-If you're seeing this, you've probably already done this step. Congrats!
+- **`/`** — the front page. Renders the latest completed run's extracted
+  recommendations as the specimen ledger; falls back to a printed mock until
+  the archive has data.
+- **`/archive`** — tracked questions (with funded-refresh balances and a
+  per-question weekly toggle), recent runs, and an operator ask form.
+- **`/archive/[runId]`** — one run: every model's answer, latency, the
+  extracted product, and the consensus line.
+- **`POST /api/commission`** — paid commissioning via
+  [x402](https://www.x402.org). Without an `X-PAYMENT` header it returns a 402
+  challenge; with one it verifies + settles through the facilitator, records
+  the payment in the gateway, and (by default) spends one credit on an
+  immediate refresh. `GET` the same path for pricing/discovery.
 
-```sh
-# create a new project
-npx sv create my-app
+### Payments model
+
+One payment buys N refresh credits. `allocation` scopes who can spend them:
+
+| allocation | meaning                                   |
+| ---------- | ----------------------------------------- |
+| `single`   | buffer for one question                   |
+| `subset`   | shared buffer across the listed questions |
+| `all`      | shared pool every question can draw from  |
+
+One credit is debited per refresh (most-specific buffer first). The weekly
+cron in llm-gateway refreshes every weekly-enabled question that still has
+buffer — so a buyer's remaining credits keep their question fresh.
+
+Example with an x402-capable client:
+
+```ts
+import { wrapFetchWithPayment } from 'x402-fetch';
+
+const fetchWithPay = wrapFetchWithPayment(fetch, walletClient);
+await fetchWithPay('https://modelmemory.example/api/commission', {
+	method: 'POST',
+	headers: { 'content-type': 'application/json' },
+	body: JSON.stringify({
+		prompt: 'Where should I host my SvelteKit app?',
+		credits: 4, // 1 spent now, 3 left for weekly refreshes
+		weekly: true
+	})
+});
 ```
 
-To recreate this project with the same configuration:
-
-```sh
-# recreate this project
-pnpm dlx sv@0.15.3 create --template minimal --types ts --add prettier eslint vitest="usages:unit,component" playwright tailwindcss="plugins:forms,typography" sveltekit-adapter="adapter:cloudflare+cfTarget:workers" drizzle="database:d1" mcp="ide:claude-code+setup:remote" --install pnpm model-memory
-```
+x402 config lives in `wrangler.jsonc` `vars` (`X402_PAY_TO` empty disables the
+endpoint; set it to your receiving address to go live).
 
 ## Developing
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
 ```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+pnpm install
+pnpm dev        # vite dev
+pnpm check      # wrangler types + svelte-check
+pnpm lint       # prettier + eslint
+pnpm test:unit  # vitest
+pnpm test:e2e   # playwright (builds + runs wrangler preview)
 ```
 
-## Building
+Without the llm-gateway Worker running locally, gateway-backed pages degrade
+gracefully (the archive shows a "warming up" notice; the homepage uses the
+printed specimen).
 
-To create a production version of your app:
+## Deploying
 
 ```sh
-npm run build
+pnpm build
+npx wrangler deploy
 ```
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+Deploy `llm-gateway` first (see its README for the one-time D1 + AI Gateway
+setup) so the service binding resolves.
