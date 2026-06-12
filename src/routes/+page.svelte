@@ -1,11 +1,46 @@
 <script lang="ts">
-	const specimens = [
-		{ model: 'GPT-5.1', answer: 'Vercel' },
-		{ model: 'Claude 4.7', answer: 'Vercel' },
-		{ model: 'Gemini 3.0', answer: 'Vercel' },
-		{ model: 'Llama 4', answer: 'Cloudflare Pages' },
-		{ model: 'DeepSeek-V4', answer: 'Vercel' }
-	];
+	import { resolve } from '$app/paths';
+
+	let { data } = $props();
+
+	// Printed fallback specimen, shown until the archive has a real run.
+	const fallback = {
+		query: 'Where should I host my SvelteKit app?',
+		logged: 'Logged 2026.05.30 · 14:21 UTC',
+		label: 'Entry №042',
+		specimens: [
+			{ model: 'GPT-5.1', answer: 'Vercel' },
+			{ model: 'Claude 4.7', answer: 'Vercel' },
+			{ model: 'Gemini 3.0', answer: 'Vercel' },
+			{ model: 'Llama 4', answer: 'Cloudflare Pages' },
+			{ model: 'DeepSeek-V4', answer: 'Vercel' }
+		]
+	};
+
+	const live = $derived.by(() => {
+		if (!data.latest) return null;
+		const rows = data.latest.responses.filter((r) => r.recommended_product);
+		if (rows.length === 0) return null;
+		const d = new Date(data.latest.run.created_at * 1000);
+		const pad = (n: number) => String(n).padStart(2, '0');
+		return {
+			query: data.latest.run.prompt,
+			logged: `Logged ${d.getUTCFullYear()}.${pad(d.getUTCMonth() + 1)}.${pad(d.getUTCDate())} · ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`,
+			label: 'Latest entry',
+			runId: data.latest.run.id,
+			specimens: rows.slice(0, 5).map((r) => ({
+				model: r.model.replace(/^@cf\/[^/]+\//, ''),
+				answer: r.recommended_product as string
+			}))
+		};
+	});
+
+	const entry = $derived(live ?? fallback);
+	const consensusTop = $derived.by(() => {
+		const counts: Record<string, number> = {};
+		for (const s of entry.specimens) counts[s.answer] = (counts[s.answer] ?? 0) + 1;
+		return Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+	});
 
 	const insights = [
 		{ stat: '87%', label: 'of hosting queries name Vercel' },
@@ -25,7 +60,7 @@
 <div class="paper">
 	<header class="masthead">
 		<div class="mark">Model Memory</div>
-		<div class="meta">Vol. I &nbsp;·&nbsp; №001 &nbsp;·&nbsp; MMXXVI</div>
+		<a class="meta" href={resolve('/archive')}>Vol. I &nbsp;·&nbsp; The Archive &rarr;</a>
 	</header>
 
 	<main class="page">
@@ -35,8 +70,8 @@
 				recommend?
 			</h1>
 			<p class="subhead">
-				An archive of which products LLMs recommend, tracked over time. Useful when
-				you want to know who owns mindshare in your category — and how that shifts.
+				An archive of which products LLMs recommend, tracked over time. Useful when you want to know
+				who owns mindshare in your category — and how that shifts.
 			</p>
 		</section>
 
@@ -44,19 +79,17 @@
 
 		<section class="specimen">
 			<div class="entry-header">
-				<span class="stamp">Entry №042</span>
-				<span class="logged">Logged 2026.05.30 · 14:21 UTC</span>
+				<span class="stamp">{entry.label}</span>
+				<span class="logged">{entry.logged}</span>
 			</div>
 
 			<p class="query">
-				<span class="quote">&ldquo;</span>Where should I host my SvelteKit app?<span
-					class="quote">&rdquo;</span
-				>
+				<span class="quote">&ldquo;</span>{entry.query}<span class="quote">&rdquo;</span>
 			</p>
 
 			<ul class="answers">
-				{#each specimens as { model, answer } (model)}
-					<li class:diverges={answer !== 'Vercel'}>
+				{#each entry.specimens as { model, answer } (model)}
+					<li class:diverges={answer !== consensusTop[0]}>
 						<span class="model">{model}</span>
 						<span class="dots" aria-hidden="true"></span>
 						<span class="answer">{answer}</span>
@@ -64,9 +97,18 @@
 				{/each}
 			</ul>
 
-			<p class="consensus">
-				Consensus 4&thinsp;⁄&thinsp;5. The dissenter is, naturally, hosted by Cloudflare.
-			</p>
+			{#if live}
+				<p class="consensus">
+					Consensus {consensusTop[1]}&thinsp;⁄&thinsp;{entry.specimens.length} for
+					{consensusTop[0]}.
+					<a href={resolve('/archive/[runId]', { runId: live.runId })}>Read the full entry &rarr;</a
+					>
+				</p>
+			{:else}
+				<p class="consensus">
+					Consensus 4&thinsp;⁄&thinsp;5. The dissenter is, naturally, hosted by Cloudflare.
+				</p>
+			{/if}
 		</section>
 
 		<hr class="rule" />
@@ -76,9 +118,8 @@
 				They keep saying<br /><em>the&nbsp;same&nbsp;thing.</em>
 			</h2>
 			<p class="lede">
-				When buyers ask an LLM what to use, the same handful of names come back.
-				Model Memory tracks that share-of-voice across every major model, and the
-				rare moments it shifts.
+				When buyers ask an LLM what to use, the same handful of names come back. Model Memory tracks
+				that share-of-voice across every major model, and the rare moments it shifts.
 			</p>
 
 			<div class="stats">
@@ -101,8 +142,7 @@
 					<div>
 						<span class="step-title">We ask.</span>
 						<span class="step-body"
-							>Every major model. Identical prompts. Weekly cadence, plus on
-							demand.</span
+							>Every major model. Identical prompts. Weekly cadence, plus on demand.</span
 						>
 					</div>
 				</li>
@@ -111,8 +151,7 @@
 					<div>
 						<span class="step-title">We archive.</span>
 						<span class="step-body"
-							>Every answer, time-stamped. Queryable, exportable, and citable as
-							evidence.</span
+							>Every answer, time-stamped. Queryable, exportable, and citable as evidence.</span
 						>
 					</div>
 				</li>
@@ -121,9 +160,8 @@
 					<div>
 						<span class="step-title">You refresh.</span>
 						<span class="step-body"
-							>Commission a new query or refresh an existing one for a few cents in
-							stablecoin via x402. We pay the model costs; the result enters the
-							public archive.</span
+							>Commission a new query or refresh an existing one for a few cents in stablecoin via
+							x402. We pay the model costs; the result enters the public archive.</span
 						>
 					</div>
 				</li>
@@ -171,6 +209,11 @@
 
 	.masthead .meta {
 		color: var(--color-mark);
+		text-decoration: none;
+	}
+
+	a.meta:hover {
+		color: var(--color-stamp);
 	}
 
 	/* —— hero —— */
@@ -305,6 +348,15 @@
 		font-style: italic;
 		color: var(--color-mark);
 		font-size: 1rem;
+	}
+
+	.consensus a {
+		color: var(--color-stamp);
+		text-decoration: none;
+	}
+
+	.consensus a:hover {
+		text-decoration: underline;
 	}
 
 	/* —— insight —— */
