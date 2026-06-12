@@ -1,0 +1,32 @@
+# Deploys the SvelteKit Worker. Requires two repo secrets:
+#   CLOUDFLARE_API_TOKEN  - API token with Workers Scripts:Edit
+#   CLOUDFLARE_ACCOUNT_ID - the target account id
+# Deploy llm-gateway first so the LLM_GATEWAY service binding resolves.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency: deploy-model-memory
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm exec vitest run
+      - run: pnpm build
+      - name: Deploy
+        run: npx wrangler deploy
